@@ -6,6 +6,12 @@
 
 #define pH_pin 25
 
+Preferences preferences;
+float EC = 0;
+
+#define SAMPLING_PERIOD    500U  // ms
+double last_measurement_ts = millis();
+
 void setup() {
   // setup sensors
   setupTDS(26);
@@ -59,36 +65,27 @@ void setup() {
 
 void loop() {
   // read sensor data
-  // adjust data according to fuzzy logic
-}
 
-/* fuzzy rules:
-[WT: water tank; N: nutrients; D: drain]
-if ph low and ec low and water low then WT on and N on and D off
-if ph low and ec low and water within then WT on and N on and D off
-if ph low and ec low na water full then WT on and N on and D on
-if ph low and ec within and water low then WT on and N on and D off
-if ph low and ec within and water within then WT on and N on and D off
-if ph low and ec within and water full then WT on and N on and D on
-if ph low and ec high and water low then WT on and N on and D off
-if ph low and ec high and water within then WT on and N on and D off
-if ph low and ec high and water low then WT on and N on and D on
-if ph in range and ec low and water low then WT off and N on and D off
-if ph in range and ec low and water within then WT off and N on and D off
-if ph in range and ec low na water full then WT off and N on and D on
-if ph in range and ec within and water low then WT off and N on and D off
-if ph in range and ec within and water within then WT off and N on and D off
-if ph in range and ec within and water full then WT off and N on and D on
-if ph in range and ec high and water low then WT off and N on and D off
-if ph in range and ec high and water within then WT off and N on and D off
-if ph in range and ec high and water low then WT off and N on and D on
-if ph above and ec low and water low then WT off and N on and D off
-if ph above and ec low and water within then WT off and N on and D off
-if ph above and ec low and water full then then WT off and N on and D on
-if ph above and ec within and water low then WT off and N on and D off
-if ph above and ec within and water within then WT off and N on and D off
-if ph above and ec within and water full then WT off and N on and D on
-if ph above and ec high and water low then WT off and N on and D off
-if ph above and ec high and water within then WT off and N on and D off
-if ph above and ec high and water low then WT off and N on and D on
-*/
+  double now_ts = millis();
+
+  if (now_ts - last_measurement_ts >= SAMPLING_PERIOD){
+
+    last_measurement_ts = now_ts;
+    
+    // 1. read TDS and convert to EC
+    readanalogvalues(analogBuffer);
+    coeff = TDSCoeff(temperature);
+    voltage = getFinalVoltage(voltage, coeff);
+    tdsValue = getTDSValue(voltage);
+    EC = tdsValue * 0.002; // EC = ppm * 2 / 1000. source: https://generalhydroponics.com/faqs/how-do-i-convert-between-tds-and-ec-readings/
+    // 2. read pH
+    readsample(26, buf);
+    pHVolt = analogtovolt(avgValue);
+    pHValue = getpH(pHVolt);
+    // 3. read temperature and humidity
+    H = readHumidity();
+    T = readTemperature('c');
+    exceptionDHT();
+  // adjust data according to fuzzy logic
+  }
+}
