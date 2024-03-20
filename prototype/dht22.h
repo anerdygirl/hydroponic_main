@@ -1,3 +1,6 @@
+#ifndef __DHT_H__
+#define __DHT_H__
+
 // need to download Adafruit DHT library first
 #include "DHT.h"
 
@@ -44,3 +47,4 @@ void exceptionDHT() {
     return;
   }
 }
+#endif // __DHT_H__

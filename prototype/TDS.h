@@ -1,12 +1,12 @@
+#ifndef __TDS_H__
+#define __TDS_H__
+
 #define VREF 3.3   // analog reference voltage(Volt) of the ADC. using the ESP32's built-in ADC
 #define SCOUNT 30  // sum of sample point
 
-#ifndef TDS_H
-#define TDS_H
 void readvalues(int (&analogBuffer)[SCOUNT]);  // Function declaration with reference parameter
 float avgVoltage(int buffer[], int count, float vref);
 float getMedian(int bArray[], int iFilterLen);
-#endif
 
 // initialize variables needed for reading and conversion
 int analogBuffer[SCOUNT];      // store the analog value in the array, read from ADC
@@ -16,7 +16,6 @@ float voltage = 0;
 float tdsValue = 0;
 float temperature = 16;  // current temperature for compensation (arbitrary value). you can use a temperature sensor and adjust as needed
 float coeff = 0;
-
 
 void setupTDS(int pin) {
   pinMode(pin, INPUT);
@@ -142,3 +141,4 @@ void calibrate() {
     }
   }
 }
+#endif
