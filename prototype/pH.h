@@ -1,5 +1,6 @@
 #ifndef __PH_H__
 #define __PH_H__
+#include "config.h"
 void readsample(int AnalogPin, int (&buf)[10]);  // Function declaration with reference parameter
 
 // variables
@@ -37,8 +38,10 @@ float analogtovolt(unsigned long int avg) {
 }
 
 // find pH according to the sensor equation: y= -5.70 * x + 21.34
-float getpH(float volt) {
-  float ph = -5.70 * volt + 21.34;
+float getpH() {
+  readsample(PH_PIN, buf);
+  pHVolt = analogtovolt(avgValue);
+  float ph = -5.70 * pHVolt + 21.34;
   return ph;
 }
 

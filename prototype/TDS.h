@@ -1,21 +1,23 @@
 #ifndef __TDS_H__
 #define __TDS_H__
-
+#include "config.h"
 #define VREF 3.3   // analog reference voltage(Volt) of the ADC. using the ESP32's built-in ADC
-#define SCOUNT 30  // sum of sample point
+#define SCOUNT 30  
 
 void readvalues(int (&analogBuffer)[SCOUNT]);  // Function declaration with reference parameter
 float avgVoltage(int buffer[], int count, float vref);
 float getMedian(int bArray[], int iFilterLen);
 
-// initialize variables needed for reading and conversion
+// initialize variables
 int analogBuffer[SCOUNT];      // store the analog value in the array, read from ADC
 int analogBufferTemp[SCOUNT];  // analogBuffer after applying median filtering
 int analogBufferIndex = 0;
 float voltage = 0;
-float tdsValue = 0;
+float tdsValue;
 float temperature = 16;  // current temperature for compensation (arbitrary value). you can use a temperature sensor and adjust as needed
-float coeff = 0;
+float coeff;
+float EC;
+float conversion_coeff = 0.002;
 
 void setupTDS(int pin) {
   pinMode(pin, INPUT);
@@ -26,7 +28,7 @@ void readanalogvalues(int (&analogBuffer)[SCOUNT]) {
   // read a bunch of analog values and store them in the buffer every 40ms
   if (millis() - analogSampleTimepoint > 40U) {
     analogSampleTimepoint = millis();
-    analogBuffer[analogBufferIndex] = analogRead(27);  //read the analog value and store into the buffer
+    analogBuffer[analogBufferIndex] = analogRead(TDS_PIN);  //read the analog value and store into the buffer
     analogBufferIndex++;
     if (analogBufferIndex == SCOUNT) {
       analogBufferIndex = 0;
@@ -41,13 +43,6 @@ void readanalogvalues(int (&analogBuffer)[SCOUNT]) {
       voltage = avgVoltage(analogBufferTemp, SCOUNT, VREF);
     }
   }
-}
-
-// converts voltage to TDS value
-float getTDSValue(float voltage) {
-  //gotta figure out the correct formula.. or simply paste it as is for now
-  float tdsValue = (133.42 * voltage * voltage * voltage - 255.86 * voltage * voltage + 857.39 * voltage) * 0.5;
-  return tdsValue;
 }
 
 // takes temperature into account to compensate for the temperature variations
@@ -94,51 +89,66 @@ float getMedian(int bArray[], int iFilterLen) {
   return bTemp;
 }
 
-void calibrate() {
-  /* read reference body
-      if ref isn't available -> print "reference NA. enter an existing reference"
-    periodically:
-      read tds
-      compare reading with ref_tds
-        if reading unstable -> keep "calibrating"
-        else (if reading stable and matching): print "calibration complete" */
-  String str, ref[3] = { "MILK", "WATER", "COOLANT" };
-  bool isinref = false;
-  // request input until it matches one of the reference objects
-  while (!isinref) {
-    Serial.print("enter an existing reference: ");
-    if (Serial.available() > 0) {
-      str = Serial.readString();
-      str.toUpperCase();
-      // check if input exists in the array
-      for (int i = 0; i < 3; i++) {
-        if (str == ref[i]){
-          isinref = true;
-          Serial.println("reference found. Starting calibration...");
-        }
-      }
-      if (isinref) {
-        // read TDS
-        float TDS;
-        readanalogvalues(analogBuffer);
-        float coeff = TDSCoeff(temperature);
-        voltage = getFinalVoltage(voltage, coeff);
-        TDS = getTDSValue(voltage);
-        // compare value read with ref
-        if (str == ref[0]) {
-          //calibrate for ref == milk
-        }
-        else if (str == ref[1]) {
-          //calibrate for ref == water
-        }
-        else if (str == ref[2]) {
-          //calibrate for ref == engine coolant
-        }
-        return;
-      }
-      else
-        Serial.println("ref NA. enter an existing reference...");
-    }
-  }
+// converts voltage to TDS value
+float getTDSValue() {
+  readanalogvalues(analogBuffer);
+  coeff = TDSCoeff(temperature);
+  voltage = getFinalVoltage(voltage, coeff);
+  //gotta figure out the correct formula.. or simply paste it as is for now
+  tdsValue = (133.42 * voltage * voltage * voltage - 255.86 * voltage * voltage + 857.39 * voltage) * 0.5;
+  return tdsValue;
 }
+
+float getECValue(float tds){
+  float ec = tds * conversion_coeff; // EC = ppm * 2 / 1000. source: https://generalhydroponics.com/faqs/how-do-i-convert-between-tds-and-ec-readings/
+  return ec;
+}
+
+// void calibrate() {
+//   /* read reference body
+//       if ref isn't available -> print "reference NA. enter an existing reference"
+//     periodically:
+//       read tds
+//       compare reading with ref_tds
+//         if reading unstable -> keep "calibrating"
+//         else (if reading stable and matching): print "calibration complete" */
+//   String str, ref[3] = { "MILK", "WATER", "COOLANT" };
+//   bool isinref = false;
+//   // request input until it matches one of the reference objects
+//   while (!isinref) {
+//     Serial.print("enter an existing reference: ");
+//     if (Serial.available() > 0) {
+//       str = Serial.readString();
+//       str.toUpperCase();
+//       // check if input exists in the array
+//       for (int i = 0; i < 3; i++) {
+//         if (str == ref[i]){
+//           isinref = true;
+//           Serial.println("reference found. Starting calibration...");
+//         }
+//       }
+//       if (isinref) {
+//         // read TDS
+//         float TDS;
+//         readanalogvalues(analogBuffer);
+//         float coeff = TDSCoeff(temperature);
+//         voltage = getFinalVoltage(voltage, coeff);
+//         TDS = getTDSValue(voltage);
+//         // compare value read with ref
+//         if (str == ref[0]) {
+//           //calibrate for ref == milk
+//         }
+//         else if (str == ref[1]) {
+//           //calibrate for ref == water
+//         }
+//         else if (str == ref[2]) {
+//           //calibrate for ref == engine coolant
+//         }
+//         return;
+//       }
+//       else
+//         Serial.println("ref NA. enter an existing reference...");
+//     }
+//   }
+// }
 #endif

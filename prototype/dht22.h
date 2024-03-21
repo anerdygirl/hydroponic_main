@@ -1,17 +1,16 @@
 #ifndef __DHT_H__
 #define __DHT_H__
 
+#include "config.h"
+
 // need to download Adafruit DHT library first
 #include "DHT.h"
-
 #define DHTTYPE DHT22
+
 float H = 0;
 float T = 0;
 
-// create an instance of your sensor outside the setup and loop functions of your program: DHT dht(DHTPIN, DHT22);
-// also define a dht pin to use: e.g #define DHTPIN 27
-
-DHT dht(25, DHT22);
+DHT dht(DHT_PIN, DHT22);
 
 // init sensor
 void beginDHT() {

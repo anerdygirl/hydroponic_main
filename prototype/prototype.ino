@@ -4,22 +4,19 @@
 #include "dht22.h"
 #include "pH.h"
 #include "fuzzy.h"
-
-#define pH_pin 25
+#include "config.h"
 
 Preferences preferences;
-float EC = 0;
 float WL; // ultrasonic sensor or equivalent is needed for water level
 
-#define SAMPLING_PERIOD    500U  // ms
 double last_measurement_ts = millis();
 
 void setup() {
   Serial.begin(115200);
   // setup sensors
-  setupTDS(26);
+  setupTDS(TDS_PIN);
   beginDHT();
-  Serial.setTimeout(10);
+  Serial.setTimeout(SER_TIMEOUT);
 
   // setup fuzzy system
   setup_fuzzy();
@@ -29,22 +26,17 @@ void setup() {
 
 void loop() {
 
-  // read sensor data
+  // read sensors data
   double now_ts = millis();
   if (now_ts - last_measurement_ts >= SAMPLING_PERIOD){
     last_measurement_ts = now_ts;
     
-    // 1. read TDS and convert to EC
-    readanalogvalues(analogBuffer);
-    coeff = TDSCoeff(temperature);
-    voltage = getFinalVoltage(voltage, coeff);
-    tdsValue = getTDSValue(voltage);
-    EC = tdsValue * 0.002; // EC = ppm * 2 / 1000. source: https://generalhydroponics.com/faqs/how-do-i-convert-between-tds-and-ec-readings/
+    // 1. read EC
+    tdsValue = getTDSValue();
+    EC = getECValue(tdsValue);
     
     // 2. read pH
-    readsample(26, buf);
-    pHVolt = analogtovolt(avgValue);
-    pHValue = getpH(pHVolt);
+    pHValue = getpH();
 
     // 3. read temperature and humidity
     H = readHumidity();
@@ -55,6 +47,6 @@ void loop() {
   set_fuzzy_inputs(pHValue, EC, WL);
   fuzzify_sys();
   fuzzyoutputs outputs = defuzzify_sys();
-
+  // next step??
   }
 }
