@@ -26,14 +26,15 @@ FuzzySet* WL_within = new FuzzySet(50, 55, 65, 70);
 FuzzySet* WL_full = new FuzzySet(65, 70, 80, 80);
 
 // membership fcts left empty because the parameters are unknown.. for now
-FuzzySet* WT_on = new FuzzySet();
-FuzzySet* WT_off = new FuzzySet();
+// edit: i wrote random value for simulation purposes. hopefully that isn't too impactful on the entire program...
+FuzzySet* WT_on = new FuzzySet(0,0,10,20);
+FuzzySet* WT_off = new FuzzySet(10,20,30,30);
 
-FuzzySet* NT_on = new FuzzySet();
-FuzzySet* NT_off = new FuzzySet();
+FuzzySet* NT_on = new FuzzySet(0,0,10,20);
+FuzzySet* NT_off = new FuzzySet(10,20,30,30);
 
-FuzzySet* D_on = new FuzzySet();
-FuzzySet* D_off = new FuzzySet();
+FuzzySet* D_on = new FuzzySet(0,0,10,20);
+FuzzySet* D_off = new FuzzySet(10,20,30,30);
 
 
 void setup_fuzzy() {

@@ -39,10 +39,15 @@ float analogtovolt(unsigned long int avg) {
 
 // find pH according to the sensor equation: y= -5.70 * x + 21.34
 float getpH() {
-  readsample(PH_PIN, buf);
-  pHVolt = analogtovolt(avgValue);
-  float ph = -5.70 * pHVolt + 21.34;
-  return ph;
+  #ifdef SIM
+    float x = 5.8;
+    return x; // from 0 to 6.7
+  #else
+    readsample(PH_PIN, buf);
+    pHVolt = analogtovolt(avgValue);
+    float ph = -5.70 * pHVolt + 21.34;
+    return ph;
+  #endif
 }
 
 #endif // __PH_H__

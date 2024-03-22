@@ -1,8 +1,8 @@
 #ifndef __TDS_H__
 #define __TDS_H__
 #include "config.h"
-#define VREF 3.3   // analog reference voltage(Volt) of the ADC. using the ESP32's built-in ADC
-#define SCOUNT 30  
+#define VREF         3.3   // analog reference voltage(Volt) of the ADC. using the ESP32's built-in ADC
+#define SCOUNT       30  
 
 void readvalues(int (&analogBuffer)[SCOUNT]);  // Function declaration with reference parameter
 float avgVoltage(int buffer[], int count, float vref);
@@ -100,55 +100,12 @@ float getTDSValue() {
 }
 
 float getECValue(float tds){
-  float ec = tds * conversion_coeff; // EC = ppm * 2 / 1000. source: https://generalhydroponics.com/faqs/how-do-i-convert-between-tds-and-ec-readings/
-  return ec;
+  #ifdef SIM
+    float x = 2;
+    return x; //from 0 to 1.4
+  #else
+    float ec = tds * conversion_coeff; // EC = ppm * 2 / 1000. source: https://generalhydroponics.com/faqs/how-do-i-convert-between-tds-and-ec-readings/
+    return ec;
+  #endif
 }
-
-// void calibrate() {
-//   /* read reference body
-//       if ref isn't available -> print "reference NA. enter an existing reference"
-//     periodically:
-//       read tds
-//       compare reading with ref_tds
-//         if reading unstable -> keep "calibrating"
-//         else (if reading stable and matching): print "calibration complete" */
-//   String str, ref[3] = { "MILK", "WATER", "COOLANT" };
-//   bool isinref = false;
-//   // request input until it matches one of the reference objects
-//   while (!isinref) {
-//     Serial.print("enter an existing reference: ");
-//     if (Serial.available() > 0) {
-//       str = Serial.readString();
-//       str.toUpperCase();
-//       // check if input exists in the array
-//       for (int i = 0; i < 3; i++) {
-//         if (str == ref[i]){
-//           isinref = true;
-//           Serial.println("reference found. Starting calibration...");
-//         }
-//       }
-//       if (isinref) {
-//         // read TDS
-//         float TDS;
-//         readanalogvalues(analogBuffer);
-//         float coeff = TDSCoeff(temperature);
-//         voltage = getFinalVoltage(voltage, coeff);
-//         TDS = getTDSValue(voltage);
-//         // compare value read with ref
-//         if (str == ref[0]) {
-//           //calibrate for ref == milk
-//         }
-//         else if (str == ref[1]) {
-//           //calibrate for ref == water
-//         }
-//         else if (str == ref[2]) {
-//           //calibrate for ref == engine coolant
-//         }
-//         return;
-//       }
-//       else
-//         Serial.println("ref NA. enter an existing reference...");
-//     }
-//   }
-// }
 #endif

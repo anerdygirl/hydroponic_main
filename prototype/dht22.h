@@ -20,8 +20,12 @@ void beginDHT() {
 
 // read humidity
 float readHumidity() {
-  float h = dht.readHumidity();
-  return h;
+  #ifdef SIM
+    return random(3);
+  #else
+    float h = dht.readHumidity();
+    return h;
+  #endif
 }
 
 // read temperature
