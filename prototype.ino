@@ -6,6 +6,7 @@
 #include "pump.h"
 #include "mqtt.h"
 
+<<<<<<< HEAD
 #include "time.h"
 
 float tempValue, h_Value;
@@ -15,6 +16,11 @@ bool valveOperated = false;
 const char* ntpServer = "0.africa.pool.ntp.org";
 const long  gmtOffset_sec = 60*60;
 const long daylightOffset_sec = 0;
+=======
+float tempValue, h_Value;
+bool valveOperated = false;
+
+>>>>>>> origin/master
 
 // to maintain mqtt connection
 unsigned long lastMQTTCheck = 0;
@@ -23,6 +29,7 @@ const unsigned long mqttCheckInterval = 10000;  // 10 seconds
 void setup() {
   // Serial.. since i don't have lcd or sth to display data on
   Serial.begin(115200);
+<<<<<<< HEAD
     // Init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   //printLocalTime();
@@ -31,6 +38,12 @@ void setup() {
   #ifndef SIM
   setupTDS(TDS_PIN);
   #endif
+=======
+  // Serial.setTimeout(SER_TIMEOUT);
+
+  // setup sensors
+  setupTDS(TDS_PIN);
+>>>>>>> origin/master
   beginDHT();
 
   // init relay module
@@ -66,8 +79,11 @@ void loop() {
 
   // operate every 24hrs -- or 5min for demo purposes
   if (currentMillis - last24hrMillis >= interval24hr) {
+<<<<<<< HEAD
     Serial.print("cycle reset at: ");
     printLocalTime();
+=======
+>>>>>>> origin/master
     last24hrMillis = currentMillis;
     valveOperated = false;  // Reset valve operation flag
   }
@@ -93,7 +109,11 @@ void loop() {
     sendDataToAdafruitIO(pHValue, tdsValue, tempValue, h_Value);
 
     // if out of range, operate valves for about 42s after the first sensor reading of the 24-hour cycle
+<<<<<<< HEAD
     if (valveOperated == false) {
+=======
+    if (!valveOperated) {
+>>>>>>> origin/master
       if (pHValue < 5.5) {
         //operate v1 and v2
         digitalWrite(V1_PIN, LOW);
@@ -109,8 +129,11 @@ void loop() {
         digitalWrite(V3_PIN, HIGH);
       }
       valveOperated = true;
+<<<<<<< HEAD
       Serial.print("finished valve operation at: ");
       printLocalTime();
+=======
+>>>>>>> origin/master
     }
 
     // Manage the water pump operation --- after i fix the tank leaking
@@ -119,6 +142,7 @@ void loop() {
     /* Manage the LED light operation
      manageLEDLights(currentMillis); */
   }
+<<<<<<< HEAD
 }
 
 void printLocalTime(){
@@ -128,4 +152,7 @@ void printLocalTime(){
     return;
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+=======
+
+>>>>>>> origin/master
 }
